@@ -1,13 +1,21 @@
 .order {
     padding: 10px;
-    display: grid;
     /* grid-template-columns: 1fr 1fr; */
+}
+
+.items {
+    display: grid;
     grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
     gap: 10px;
 }
 
+#sentinel {
+    height: 30px;
+    background-color: red;
+}
+
 @media(max-width: 530px) {
-    .order {
+    .items {
         display: flex;
         flex-direction: column;
     }

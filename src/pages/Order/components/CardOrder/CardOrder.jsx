@@ -3,7 +3,7 @@ import propTypes from 'prop-types';
 import { format } from 'date-fns';
 import formatCurrency from "../../../../utils/formatCurrency.js";
 
-function CardOrder({ order}) {
+function CardOrder({ order }) {
 
     const {
         C5_FILIAL,
@@ -29,15 +29,17 @@ function CardOrder({ order}) {
     } = order;
 
     return (
+
         <div
             className={`
-            card-order
-            card-order-status
-            ${(C5_ZSTSOSS === "ADD") && "card-order-status-add"}
-            ${(C5_ZSTSOSS === "ALT") && "card-order-status-alt"}
-            ${(C5_ZSTSOSS === "SPN") && "card-order-status-spn"}
-            ${(C5_ZSTSOSS === "SPD") && "card-order-status-spd"}
-        `}>
+                card-order
+                card-order-status
+                ${(C5_ZSTSOSS === "ADD") && "card-order-status-add"}
+                ${(C5_ZSTSOSS === "ALT") && "card-order-status-alt"}
+                ${(C5_ZSTSOSS === "SPN") && "card-order-status-spn"}
+                ${(C5_ZSTSOSS === "SPD") && "card-order-status-spd"}
+            `}
+        >
             <p className="card-order-title">
                 {C5_FILIAL}  |  {C5_NUM}  / {C5_ZVERSAO} |  {format(new Date(C5_EMISSAO), "dd/MM/yyyy")} {C5_ZHORA}  |  Vendedor(a): {A3_NOME}
             </p>
@@ -77,6 +79,8 @@ function CardOrder({ order}) {
                 )
             }
         </div>
+
+        
     );
 }
 
@@ -99,8 +103,9 @@ CardOrder.propTypes = {
         C5_ZOBSERV: propTypes.string,
         C5_ZSEPARA: propTypes.string,
         USR_NOME: propTypes.string,
-        C5_ZSTSOSS: propTypes.string
+        C5_ZSTSOSS: propTypes.string,
     }).isRequired,
+    id: propTypes.string,
 };
 
 export default CardOrder;
