@@ -1,66 +1,89 @@
 import "./Order.css";
 import CardOrder from "./components/CardOrder/CardOrder";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { useInView } from 'react-intersection-observer';
+
 
 function Order() {
 
     const [orders, setOrders] = useState([]);
+    const [numberOfLoops, setNumberOfLoops] = useState(1);
 
-    let offset = 0;
+    const offsetRef = useRef(0);
 
-    const removeDuplicates = useCallback((data) => {
+    const { ref, inView } = useInView({});
 
-        const property = "R_E_C_N_O_";
-
-        return data.filter((obj, index, self) =>
+    const removeDuplicates = useCallback((array, property) => {
+        const filter = array.filter((obj, index, self) =>
         index === self.findIndex((o) => o[property] === obj[property]));
-
-    }, [])
+    
+      return filter;
+    }, []);
 
     const fetchOrders = useCallback(async () => {
 
-        const dataOrders = await axios.get(`http://localhost:3001/order?offset=${offset}`);
+        const limit = 6;
 
-        return dataOrders.data;
+        const params = {
+            offset: offsetRef.current,
+            limit,
+            startDate: "20240127",
+            endDate: "20240127",
+        };
 
-    }, [offset]);
+        const response = await axios.get(`http://localhost:3001/order`, { params });
+
+        return response.data;
+
+    }, []);
+
 
     const setOrdersData = useCallback(async () => {
 
         const dataOrders = await fetchOrders();
 
-        const newOrders = removeDuplicates([...orders, ...dataOrders.data]);
+        if (dataOrders.data.length > 0) {
+            setOrders((current) => removeDuplicates([...current, ...dataOrders.data], "R_E_C_N_O_"));
 
-        setOrders(newOrders);
-        
-    }, [fetchOrders, removeDuplicates, orders])
+            setNumberOfLoops((current) => current + 1);
+        }
+
+    }, [fetchOrders, removeDuplicates])
 
     useEffect(() => {
 
-        setOrdersData();
+        if (inView) {
 
-    }, [setOrdersData])
+            setOrdersData();
+        }
+
+    }, [inView, setOrdersData, numberOfLoops]);
+
+    const ordersLength = () => {
+        offsetRef.current = orders.length;
+    };
 
 
     return (
-        <div className="order">
+        <>
+            <div className="order">
 
-            {
-                <div className="items">
-                    {orders.map((el) => (
-                        <CardOrder key={el.R_E_C_N_O_} order={el} />
-                    ))}
-                </div>
-            }
+                {
+                    <div className="items">
+                        {orders.map((el) => (
+                            <CardOrder key={el.R_E_C_N_O_} order={el} />
+                        ))}
+                    </div>
+                }
 
-            <div id="sentinel">
-                {offset}
+                <div ref={ref}></div>
+
+
             </div>
+            {ordersLength()}
+        </>
 
-
-
-        </div>
 
     );
 }
