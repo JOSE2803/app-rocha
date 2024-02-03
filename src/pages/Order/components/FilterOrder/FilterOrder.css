@@ -1,0 +1,42 @@
+.filter-down {
+    background-color: #EDEDF0;
+    border-radius: 10PX;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+.filter-down:hover {
+    background-color: #CACAD2;
+    cursor: pointer;
+}
+
+.expanded-filter {
+    background-color: #EDEDF0;
+    border-radius: 10px;
+}
+
+.filter-up {
+    border-radius: 0px 0px 10px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+.filter-up:hover {
+    background-color: #CACAD2;
+    cursor: pointer;
+}
+
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.filter-icon {
+    font-size: 25px;
+}

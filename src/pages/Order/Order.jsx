@@ -1,6 +1,7 @@
 // Order.jsx
 import "./Order.css";
 import CardOrder from "./components/CardOrder/CardOrder";
+import FilterOrder from "./components/FilterOrder/FilterOrder";
 import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useInView } from 'react-intersection-observer';
@@ -59,6 +60,7 @@ function Order() {
     return (
         <>
             <div className="order">
+                <FilterOrder></FilterOrder>
                 <div className="items">
                     {orders.map((el) => (
                         <CardOrder key={el.R_E_C_N_O_} order={el} />

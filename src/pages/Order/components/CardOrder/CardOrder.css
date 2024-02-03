@@ -10,6 +10,11 @@
     position: relative;
 }
 
+.card-order:hover {
+    background-color: #CACAD2;
+    cursor: pointer;
+}
+
 .card-order-status::before {
     position: absolute;
     top: 0;
