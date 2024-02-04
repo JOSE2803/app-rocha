@@ -1,74 +1,68 @@
 // Order.jsx
 import "./Order.css";
-import CardOrder from "./components/CardOrder/CardOrder";
-import FilterOrder from "./components/FilterOrder/FilterOrder";
-import { useCallback, useEffect, useRef, useState } from "react";
+import CardOrder from "./components/CardOrder/CardOrder.jsx";
+import FilterOrder from "./components/FilterOrder/FilterOrder.jsx";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useInView } from 'react-intersection-observer';
 import removeDuplicates from "../../utils/removeDuplicates.js";
 
 function Order() {
-    const [orders, setOrders] = useState([]);
-    const [numberOfLoops, setNumberOfLoops] = useState(1);
-    const offsetRef = useRef(0);
+
+    const [data, setData] = useState([]);
+    const [loop, setLoop] = useState(0);
+
+    const offset = useRef(0);
+
     const { ref, inView } = useInView({});
 
-    const fetchOrders = useCallback(async () => {
+    const dataLength = () => {
+        offset.current = data.length;
+    };
 
-        const limit = 10;
+    const fetchData = async () => {
+
         const params = {
-            offset: offsetRef.current,
-            limit,
+            offset: offset.current,
+            limit: 5,
             startDate: "20240203",
             endDate: "20240203",
         };
 
         const response = await axios.get(`http://localhost:3001/order`, { params });
 
-        return response.data;
+        const data = response.data.data;
 
-    }, []);
+        setData((pre) => {
+            const updateData = removeDuplicates([...pre, ...data], "R_E_C_N_O_");
+            return updateData;
+        });
 
-    const setOrdersData = useCallback(async () => {
+        setLoop(pre => pre + 1);
 
-        let dataOrders = await fetchOrders();
-
-        // Verifica se não retornou vazio.
-        if (dataOrders.data.length > 0) {
-            setOrders((current) => {
-                const updatedOrders = removeDuplicates([...current, ...dataOrders.data], "R_E_C_N_O_");
-                return updatedOrders;
-            });
-            setNumberOfLoops((current) => current + 1);
-        }
-
-    }, [fetchOrders]);
+    };
 
     useEffect(() => {
 
         if (inView) {
-            console.log("CHAMOU");
-            setOrdersData();
+            fetchData();
         }
-        
-    }, [inView, numberOfLoops, setOrdersData]);
 
-    const ordersLength = () => {
-        offsetRef.current = orders.length;
-    };
+    }, [inView, loop])
 
     return (
         <>
             <div className="order">
                 <FilterOrder></FilterOrder>
                 <div className="items">
-                    {orders.map((el) => (
+                    {data.map((el) => (
                         <CardOrder key={el.R_E_C_N_O_} order={el} />
                     ))}
                 </div>
                 <div ref={ref}></div>
             </div>
-            {ordersLength()}
+            {console.log(data.length)}
+            {dataLength()}
         </>
     );
 }
