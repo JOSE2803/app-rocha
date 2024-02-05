@@ -12,7 +12,6 @@
 
 .card-order:hover {
     background-color: #CACAD2;
-    cursor: pointer;
 }
 
 .card-order-status::before {
@@ -43,20 +42,20 @@
 
 .card-order-title {
     font-weight: 600;
-    font-size: 11px;
+    font-size: 10px;
     text-align: center;
     text-transform: uppercase;
 }
 .card-order-client {
     font-weight: 700;
-    font-size: 15px;
+    font-size: 14px;
     text-align: center;
     text-transform: uppercase;
 }
 
 .card-order-secondarys {
     font-weight: 400;
-    font-size: 11px;
+    font-size: 10px;
     text-align: center;
     text-transform: uppercase;
 }

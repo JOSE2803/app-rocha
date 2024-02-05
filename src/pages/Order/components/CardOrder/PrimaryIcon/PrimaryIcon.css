@@ -1,0 +1,18 @@
+.card-order-icons-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.icon-default {
+    font-size: 25px;
+    cursor: pointer;
+
+}
+
+.icon-invoice {
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+}

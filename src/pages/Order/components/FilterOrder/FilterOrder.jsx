@@ -25,7 +25,6 @@ function FilterOrder() {
                             <h1>FILTROS AQUI</h1>
                             <h1>FILTROS AQUI</h1>
                             <h1>FILTROS AQUI</h1>
-                            <h1>FILTROS AQUI</h1>
                         </div>
                         <div className="filter-up" onClick={handleClick} title="Ocultar filtros">
                             <TbFilterUp className="filter-icon"></TbFilterUp>

@@ -6,12 +6,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useInView } from 'react-intersection-observer';
 import removeDuplicates from "../../utils/removeDuplicates.js";
+import SwitchToggle from "../../../../components/SwitchToggle/SwitchToggle.jsx";
 
 function Order() {
     const [orders, setOrders] = useState([]);
     const [numberOfLoops, setNumberOfLoops] = useState(1);
     const offsetRef = useRef(0);
     const { ref, inView } = useInView({});
+
+    const [value, setValue] = useState(false);
 
     const fetchOrders = useCallback(async () => {
 
@@ -50,7 +53,7 @@ function Order() {
             console.log("CHAMOU");
             setOrdersData();
         }
-        
+
     }, [inView, numberOfLoops, setOrdersData]);
 
     const ordersLength = () => {
@@ -60,6 +63,11 @@ function Order() {
     return (
         <>
             <div className="order">
+                <SwitchToggle
+                    isOn={value}
+                    onColor="#EF476F"
+                    handleToggle={() => setValue(!value)}
+                />
                 <FilterOrder></FilterOrder>
                 <div className="items">
                     {orders.map((el) => (
