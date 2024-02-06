@@ -6,13 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useInView } from 'react-intersection-observer';
 import removeDuplicates from "../../utils/removeDuplicates.js";
-import SwitchToggle from "../../components/SwitchToggle/SwitchToggle.jsx";
 
 function Order() {
 
     const [data, setData] = useState([]);
     const [loop, setLoop] = useState(0);
-    const [value, setValue] = useState(false);
 
     const offset = useRef(0);
 
@@ -26,7 +24,7 @@ function Order() {
 
         const params = {
             offset: offset.current,
-            limit: 5
+            limit: 10
         };
 
         const response = await axios.get(`http://localhost:3001/order`, { params });
@@ -53,11 +51,6 @@ function Order() {
     return (
         <>
             <div className="order">
-            <SwitchToggle
-                    isOn={value}
-                    onColor="#EF476F"
-                    handleToggle={() => setValue(!value)}
-                />
                 <FilterOrder></FilterOrder>
                 <div className="items">
                     {data.map((el) => (
