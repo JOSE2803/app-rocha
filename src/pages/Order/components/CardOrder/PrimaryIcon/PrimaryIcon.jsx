@@ -19,7 +19,7 @@ function PrimaryIcon({ order }) {
             {C5_NOTA &&
                 <img
                     className="icon-invoice"
-                    src="/public/assets/icons/invoice.svg"
+                    src="/assets/icons/invoice.svg"
                     alt="Nota Fiscal Eletrônica"
                     title={`${C5_NOTA}/${C5_SERIE}`}
                 />
