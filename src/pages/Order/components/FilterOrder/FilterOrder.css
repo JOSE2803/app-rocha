@@ -32,11 +32,44 @@
 
 .filter-options {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
+    padding: 20px;
+    gap: 20px;
 }
 
 .filter-icon {
     font-size: 25px;
+}
+
+.input-default {
+    height: 36px;
+    max-width: 150px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #ccc;
+}
+
+.input-default:focus {
+    border-color: #EF7D00;
+    outline: none;
+}
+
+.input-default::placeholder {
+    color: #999;
+}
+
+.div-default {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.div-date {
+    flex-direction: row;
+}
+
+.start-end-date {
+    flex-direction: column;
 }

@@ -24,7 +24,7 @@ function Order() {
 
         const params = {
             offset: offset.current,
-            limit: 10
+            limit: 5
         };
 
         const response = await axios.get(`http://localhost:3001/order`, { params });
