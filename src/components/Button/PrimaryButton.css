@@ -1,0 +1,15 @@
+.default-button {
+    width: 150px;
+    height: 35px;
+    border-radius: 10px;
+    border: 0 solid;
+    cursor: pointer;
+    box-sizing: border-box;
+    background-color: #464646;
+    color: #ffffff;
+}
+
+.default-button:hover {
+    background-color: #46464680;
+}
+

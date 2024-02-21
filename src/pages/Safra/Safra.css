@@ -1,0 +1,10 @@
+.file-select {
+    display: none;
+}
+
+.safra-window {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
