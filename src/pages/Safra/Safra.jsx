@@ -64,7 +64,7 @@ function Safra() {
             </div>
             <div className="buttons-bar">
                 <input id="file-select" className="file-select" type="file" accept=".csv" onChange={fileRead} />
-                <PrimaryButton text="Importar Arquivo" onClick={handleClick} />
+                <PrimaryButton text="Importar Vendas" onClick={handleClick} />
             </div>
 
         </div>
