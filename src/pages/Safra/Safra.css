@@ -8,3 +8,14 @@
     flex-direction: column;
     gap: 10px;
 }
+
+.items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+}
+
+.buttons-bar {
+    display: flex;
+    gap: 5px
+}

@@ -1,0 +1,58 @@
+.card-safra {
+    background-color:#EDEDF0;
+    border-radius: 10px;
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    position: relative;
+    cursor: pointer;
+}
+
+.card-safra::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 10px 0px 0px 10px;
+    content: "";
+    height: 100%;
+    width: 10px;
+}
+
+.card-safra:hover {
+    background-color: #CACAD2;
+}
+
+.card-icon {
+    display: flex;
+    height: 35px;
+}
+
+.visa-icon {
+    height: 25px;
+}
+
+.safra-nsu {
+    font-size: 12px;
+}
+
+.safra-values {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.safra-details {
+    font-size: 10px;
+}
+
+.card-safra-conciliated-no::before {
+    background-color: #00796B;
+}
+
+.card-safra-conciliated-yes::before {
+    background-color: #FF5722;
+}
