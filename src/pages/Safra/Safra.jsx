@@ -45,7 +45,23 @@ function Safra() {
             draggable: true,
             progress: undefined,
             theme: "dark",
-            });
+        });
+    };
+
+    const toastUpdate = (id, render, type) => {
+        toast.update(id, {
+            render,
+            type,
+            isLoading: false,
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+        });
     };
 
     const handleClickFilters = () => {
@@ -78,25 +94,28 @@ function Safra() {
 
         const file = e.target.files[0];
 
-        if (!file) return;
+        if (!file) {
+            toastError("Arquivo inválido");
+            return;
+        }
 
         try {
             const data = await csvRead(file, { header: true, skipEmptyLines: true });
 
             const validData = data.every(data => keysValidation(data, expectedKeys));
 
-            if (!validData) {
+            if (!validData || data.length <= 0) {
                 toastError("Arquivo inválido");
             } else {
                 setSales(data);
             }
 
         } catch (error) {
-            console.error("Erro ao processar o arquivo:", error);
+            toastError("Erro inesperado");
         }
     }, []);
 
-    const getData = useCallback(async () => {
+    const getSales = useCallback(async () => {
 
         const response = await axios.get(`http://localhost:3001/safra`);
 
@@ -111,14 +130,17 @@ function Safra() {
 
     }, []);
 
-    const postData = useCallback(async () => {
+    const postSales = useCallback(async () => {        
 
         if (sales.length === 0) return;
 
+        const id = toast.loading("Aguarde...");
+
         try {
+            
             // Utiliza Promise.all para aguardar a conclusão de todas as promessas de postagem
             const result = await Promise.all(sales.map(async (sale) => {
-                
+
                 const {
                     EC: CommercialPlace,
                     TERMINAL: terminal,
@@ -177,19 +199,24 @@ function Safra() {
                 // Aguarda pela conclusão desta requisição de postagem
                 await axios.post(`http://localhost:3001/safra`, formattedSale);
 
-                toastSuccess("Vendas importadas com sucesso");
-
                 return { "success": true, "message": "Registro incluído com sucesso.", "nsu": cleanValue(nsu) };
 
             }));
 
-            
+            const allSuccess = result.every(item => item.success === true);
+
+            if (allSuccess) {
+                toastUpdate(id, "Vendas importadas com sucesso", "success");
+            } else {
+                toastUpdate(id, "Falha na importação", "error");
+            }
+
 
             // Só atualiza o estado quando todas as postagens forem completadas
             setHasPosted(true);
 
         } catch (error) {
-            toastError("Erro inesperado.");
+            toastUpdate(id, "Erro inesperado", "error");
             return;
         }
 
@@ -198,15 +225,15 @@ function Safra() {
     useEffect(() => {
         if (sales.length > 0) {
             setHasPosted(false);
-            postData();
+            postSales();
         }
-    }, [sales, postData]);
+    }, [sales, postSales]);
 
     useEffect(() => {
         if (hasPosted) {
-            getData();
+            getSales();
         }
-    }, [hasPosted, getData]);
+    }, [hasPosted, getSales]);
 
     return (
         <div className="safra-window">
@@ -228,7 +255,7 @@ function Safra() {
                     ))}
             </div>
             <ToastContainer
-                style={{ fontSize: '12px' }}
+                style={{ fontSize: "12px", maxWidth: "300px" }}
                 position="bottom-right"
                 autoClose={5000}
                 hideProgressBar={false}
