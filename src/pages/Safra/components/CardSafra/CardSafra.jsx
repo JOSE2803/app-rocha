@@ -2,9 +2,9 @@ import "./CardSafra.css";
 import propTypes from 'prop-types';
 import { format } from 'date-fns';
 import formatCurrency from "../../../../utils/formatCurrency.js";
-import visaIcon from "../../../../../public/assets/icons/visa.svg"
-import eloIcon from "../../../../../public/assets/icons/elo.svg"
-import mastercard from "../../../../../public/assets/icons/mastercard.svg"
+import visaIcon from "/assets/icons/visa.svg"
+import eloIcon from "/assets/icons/elo.svg"
+import mastercard from "/assets/icons/mastercard.svg"
 
 function CardSafra({ sale }) {
 

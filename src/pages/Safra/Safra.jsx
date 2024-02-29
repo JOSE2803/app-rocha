@@ -8,6 +8,8 @@ import axios from "axios";
 import removeDuplicates from "../../utils/removeDuplicates.js";
 import { format, parse } from 'date-fns';
 import Modal from "../../components/Modal/Modal.jsx";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Safra() {
 
@@ -16,34 +18,63 @@ function Safra() {
     const [hasPosted, setHasPosted] = useState(true);
     const [showModal, setShowModal] = useState(false);
 
-    const expectedKeys = [
-        "AAAAMM",
-        "AUTORI",
-        "CRT ESTRANG",
-        "DATA VENDA",
-        "EC",
-        "HORA",
-        "MODALIDADE",
-        "NCAR",
-        "NSU",
-        "PL",
-        "PRODUTO",
-        "T",
-        "TAXA ADMN",
-        "TERMINAL",
-        "VALOR BRUTO",
-        "VALOR LIQUIDO"
-    ];
-
     const handleClick = () => {
         document.getElementById("file-select").click();
+    };
+
+    const toastSuccess = (message) => {
+        toast.success(message, {
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+        });
+    };
+
+    const toastError = (message) => {
+        toast.error(message, {
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+            });
     };
 
     const handleClickFilters = () => {
         setShowModal(!showModal);
     };
 
-    const fileRead = async (e) => {
+    // Função para limpar os valores das propriedades
+    const cleanValue = (value) => value.replace("'", "").trim().replace(",", ".");
+
+    const fileRead = useCallback(async (e) => {
+
+        const expectedKeys = [
+            "AAAAMM",
+            "AUTORI",
+            "CRT ESTRANG",
+            "DATA VENDA",
+            "EC",
+            "HORA",
+            "MODALIDADE",
+            "NCAR",
+            "NSU",
+            "PL",
+            "PRODUTO",
+            "T",
+            "TAXA ADMN",
+            "TERMINAL",
+            "VALOR BRUTO",
+            "VALOR LIQUIDO"
+        ];
 
         const file = e.target.files[0];
 
@@ -55,7 +86,7 @@ function Safra() {
             const validData = data.every(data => keysValidation(data, expectedKeys));
 
             if (!validData) {
-                console.error("Erro: As chaves do objeto não correspondem ao esperado.");
+                toastError("Arquivo inválido");
             } else {
                 setSales(data);
             }
@@ -63,9 +94,9 @@ function Safra() {
         } catch (error) {
             console.error("Erro ao processar o arquivo:", error);
         }
-    };
+    }, []);
 
-    const fetchData = useCallback(async () => {
+    const getData = useCallback(async () => {
 
         const response = await axios.get(`http://localhost:3001/safra`);
 
@@ -81,39 +112,88 @@ function Safra() {
     }, []);
 
     const postData = useCallback(async () => {
-        // Utiliza Promise.all para aguardar a conclusão de todas as promessas de postagem
-        await Promise.all(sales.map(async (sale) => {
-            const dateString = `${sale["DATA VENDA"].replace("'", "").trim()} ${sale.HORA.replace("'", "").replace(/\./g, ':').trim()}`;
-            const date = parse(dateString, 'dd/MM/yyyy HH:mm:ss', new Date());
 
-            const body = {
-                CommercialPlace: sale.EC.replace("'", "").trim(),
-                Terminal: sale.TERMINAL.replace("'", "").trim(),
-                CreatedAt: format(date, "yyyyMMdd HH:mm:ss"),
-                Installment: parseInt(sale.PL.replace("'", "")),
-                Nsu: sale.NSU.replace("'", "").trim(),
-                Product: sale.PRODUTO.replace("'", "").trim(),
-                Modality: sale.MODALIDADE.replace("'", "").trim(),
-                CardNumber: sale.NCAR.replace("'", "").trim(),
-                GrossValue: parseFloat(sale["VALOR BRUTO"].replace("'", "").replace(",", ".")),
-                Tax: parseFloat(sale["TAXA ADMN"].replace("'", "").replace(",", ".")),
-                Autorization: sale.AUTORI.replace("'", "").trim(),
-                ForeignCard: sale["CRT ESTRANG"].replace("'", "").trim() === "N" ? 0 : 1,
-                NetValue: parseFloat(sale["VALOR LIQUIDO"].replace("'", "").replace(",", ".")),
-                Conciliated: 0
-            }
+        if (sales.length === 0) return;
 
-            // Aguarda pela conclusão desta requisição de postagem
-            return axios.post(`http://localhost:3001/safra`, body);
-        }));
+        try {
+            // Utiliza Promise.all para aguardar a conclusão de todas as promessas de postagem
+            const result = await Promise.all(sales.map(async (sale) => {
+                
+                const {
+                    EC: CommercialPlace,
+                    TERMINAL: terminal,
+                    ["DATA VENDA"]: date,
+                    HORA: hour,
+                    PL: installment,
+                    NSU: nsu,
+                    PRODUTO: product,
+                    MODALIDADE: modality,
+                    NCAR: cardNumber,
+                    ["VALOR BRUTO"]: grossValue,
+                    ["TAXA ADMN"]: tax,
+                    AUTORI: autorization,
+                    ["CRT ESTRANG"]: foreignCard,
+                    ["VALOR LIQUIDO"]: netValue
+                } = sale;
 
-        // Só atualiza o estado quando todas as postagens forem completadas
-        setHasPosted(true);
+                const params = {
+                    startNsu: cleanValue(nsu),
+                    endNsu: cleanValue(nsu)
+                }
+
+                //Faz um consulta para verificar se o Nsu já existe.
+                const response = await axios.get(`http://localhost:3001/safra`, { params });
+
+                //Finaliza em caso de status diferente de 200
+                if (response.status !== 200) {
+                    return { "success": false, "message": "Falaha ao verificar se Nsu já existe.", "nsu": cleanValue(nsu) };
+                }
+
+                //Finaliza caso o Nsu já existir.
+                if (response.data && response.data.data.length > 0) {
+                    return { "success": true, "message": "O NSU já existe", "nsu": cleanValue(nsu) };
+                }
+
+                const dateString = `${date.replace("'", "").trim()} ${hour.replace("'", "").replace(/\./g, ':').trim()}`;
+                const dateParse = parse(dateString, 'dd/MM/yyyy HH:mm:ss', new Date());
+
+                const formattedSale = {
+                    CommercialPlace: cleanValue(CommercialPlace),
+                    Terminal: cleanValue(terminal),
+                    CreatedAt: format(dateParse, "yyyyMMdd HH:mm:ss"),
+                    Installment: parseInt(cleanValue(installment)),
+                    Nsu: cleanValue(nsu),
+                    Product: cleanValue(product),
+                    Modality: cleanValue(modality),
+                    CardNumber: cleanValue(cardNumber),
+                    GrossValue: parseFloat(cleanValue(grossValue)),
+                    Tax: parseFloat(cleanValue(tax)),
+                    Autorization: cleanValue(autorization),
+                    ForeignCard: cleanValue(foreignCard) === "N" ? 0 : 1,
+                    NetValue: parseFloat(cleanValue(netValue)),
+                    Conciliated: 0
+                };
+
+                // Aguarda pela conclusão desta requisição de postagem
+                await axios.post(`http://localhost:3001/safra`, formattedSale);
+
+                toastSuccess("Vendas importadas com sucesso");
+
+                return { "success": true, "message": "Registro incluído com sucesso.", "nsu": cleanValue(nsu) };
+
+            }));
+
+            
+
+            // Só atualiza o estado quando todas as postagens forem completadas
+            setHasPosted(true);
+
+        } catch (error) {
+            toastError("Erro inesperado.");
+            return;
+        }
+
     }, [sales]);
-
-    useEffect(() => {
-
-    }, [showModal])
 
     useEffect(() => {
         if (sales.length > 0) {
@@ -124,9 +204,9 @@ function Safra() {
 
     useEffect(() => {
         if (hasPosted) {
-            fetchData();
+            getData();
         }
-    }, [hasPosted, fetchData]);
+    }, [hasPosted, getData]);
 
     return (
         <div className="safra-window">
@@ -147,7 +227,20 @@ function Safra() {
                         <CardSafra key={el.Nsu} sale={el} />
                     ))}
             </div>
-
+            <ToastContainer
+                style={{ fontSize: '12px' }}
+                position="bottom-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="dark"
+                transition:Bounce
+            />
 
         </div>
     );
