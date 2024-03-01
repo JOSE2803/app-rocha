@@ -1,7 +1,7 @@
 import "./Safra.css";
 import { csvRead } from "../../utils/csvRead";
 import { keysValidation } from "../../utils/keysValidation"; // Supondo que você mova isso para um util
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useContext } from "react";
 import PrimaryButton from "../../components/Button/PrimaryButton";
 import CardSafra from "./components/CardSafra/CardSafra";
 import axios from "axios";
@@ -10,19 +10,21 @@ import { format, parse } from 'date-fns';
 import Modal from "../../components/Modal/Modal.jsx";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { context } from "../../context/SafraContext/SafraContext.jsx";
 
 function Safra() {
 
-    const [data, setData] = useState([]);
+    const { data, setData } = useContext(context);
     const [sales, setSales] = useState([]);
     const [hasPosted, setHasPosted] = useState(true);
     const [showModal, setShowModal] = useState(false);
 
-    const handleClick = () => {
+
+    const handleSalesClick = () => {
         document.getElementById("file-select").click();
     };
 
-    const toastSuccess = (message) => {
+    /*const toastSuccess = (message) => {
         toast.success(message, {
             position: "bottom-right",
             autoClose: 5000,
@@ -33,7 +35,7 @@ function Safra() {
             progress: undefined,
             theme: "dark",
         });
-    };
+    };*/
 
     const toastError = (message) => {
         toast.error(message, {
@@ -108,11 +110,14 @@ function Safra() {
                 toastError("Arquivo inválido");
             } else {
                 setSales(data);
-            }
+            }            
 
         } catch (error) {
             toastError("Erro inesperado");
+        } finally {
+            e.target.value = "";
         }
+
     }, []);
 
     const getSales = useCallback(async () => {
@@ -142,7 +147,7 @@ function Safra() {
             const result = await Promise.all(sales.map(async (sale) => {
 
                 const {
-                    EC: CommercialPlace,
+                    EC: commercialPlace,
                     TERMINAL: terminal,
                     ["DATA VENDA"]: date,
                     HORA: hour,
@@ -180,7 +185,7 @@ function Safra() {
                 const dateParse = parse(dateString, 'dd/MM/yyyy HH:mm:ss', new Date());
 
                 const formattedSale = {
-                    CommercialPlace: cleanValue(CommercialPlace),
+                    CommercialPlace: cleanValue(commercialPlace),
                     Terminal: cleanValue(terminal),
                     CreatedAt: format(dateParse, "yyyyMMdd HH:mm:ss"),
                     Installment: parseInt(cleanValue(installment)),
@@ -210,7 +215,6 @@ function Safra() {
             } else {
                 toastUpdate(id, "Falha na importação", "error");
             }
-
 
             // Só atualiza o estado quando todas as postagens forem completadas
             setHasPosted(true);
@@ -243,8 +247,8 @@ function Safra() {
             </div>
             <div className="buttons-bar">
                 <input id="file-select" className="file-select" type="file" accept=".csv" onChange={fileRead} />
-                <PrimaryButton text="Vendas" onClick={handleClick} />
-                <PrimaryButton text="Recebimentos" onClick={handleClick} />
+                <PrimaryButton text="Vendas" onClick={handleSalesClick} />
+                <PrimaryButton text="Recebimentos" onClick={handleSalesClick} />
                 <PrimaryButton text="Filtros" onClick={handleClickFilters} />
             </div>
             <div className="items">

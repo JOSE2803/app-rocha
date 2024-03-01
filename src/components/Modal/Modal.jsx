@@ -5,6 +5,7 @@ function Modal({ children, activated, onClose }) {
     return (
         <>
             <div className={`background ${!activated && "hide"}`} onClick={onClose}>
+                
             </div>
             <div className={`modal ${!activated && "hide"}`}>
                 {children}

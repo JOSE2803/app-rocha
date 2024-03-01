@@ -1,0 +1,22 @@
+.installment {
+    height: 35px;
+    background-color: #EDEDF0;
+    width: 100%;
+    display: flex;
+    border-radius: 10px;
+    padding: 10px;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.installment:hover {
+    background-color: #CACAD2;
+}
+
+.status {
+    background-color: #00796B;
+    height: 10px;
+    width: 10px;
+    border-radius: 50px;
+}

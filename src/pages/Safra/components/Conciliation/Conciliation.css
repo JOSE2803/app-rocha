@@ -1,0 +1,44 @@
+.sale-conciliation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: top;
+    font-size: 13px;
+    min-height: 350px;
+}
+
+.sale-header {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sale-infos {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
+    border-bottom: 1px solid #00000080;
+    padding-bottom: 20px;
+    gap: 10px;
+}
+
+.sale-installment {
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 40vh;
+    overflow: auto;
+}
+
+.sales-values {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 5px;
+}
