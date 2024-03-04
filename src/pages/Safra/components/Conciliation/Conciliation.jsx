@@ -3,15 +3,22 @@ import propTypes from 'prop-types';
 import SaleProduct from "../SaleProduct/SaleProduct.jsx";
 import { format, addDays } from 'date-fns';
 import formatCurrency from "../../../../utils/formatCurrency.js";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useContext, useEffect } from "react";
 import { useCallback } from "react";
 import Installments from "../Installments/Installments.jsx";
+import { context } from "../../../../context/SafraContext/SafraContext.jsx";
+import PrimaryButton from "../../../../components/Button/PrimaryButton.jsx";
+import { ToastContainer, toast } from 'react-toastify';
 
-function Conciliation({ sale }) {
+function Conciliation({ sale, setShowModal }) {
 
-    const [installmentContents, setInstallmentContents] = useState([]);
-    const [showOptions, setShowOptions] = useState(true);
+    const {
+        installmentContents,
+        setInstallmentContents,
+        showOptions,
+        setShowOptions,
+        setData
+    } = useContext(context);
 
     const {
         Autorization,
@@ -29,6 +36,56 @@ function Conciliation({ sale }) {
         Conciliated
     } = sale;
 
+    const toastError = (message) => {
+        toast.error(message, {
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+        });
+    };
+
+    /*const toastUpdate = (id, render, type) => {
+        toast.update(id, {
+            render,
+            type,
+            isLoading: false,
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+        });
+    };*/
+
+    const handleSaveConciliation = () => {
+
+        const allConciliateds = installmentContents.every(item => item.conciliated === true);
+
+        if (!allConciliateds) {
+            toastError("Há conciliações pendentes");
+            return;
+        }
+
+        setData((current) => {
+            return current.map((item) => {
+                return item.Nsu === Nsu
+                    ? { ...item, Conciliated: true }
+                    : item
+            });
+        });
+
+        setShowModal(false);
+
+    };
+
     const defineInstallments = useCallback(() => {
 
         const contents = [];
@@ -39,7 +96,8 @@ function Conciliation({ sale }) {
                 conciliated: Conciliated ? true : false,
                 installment: 1,
                 value: GrossValue,
-                dueDate: addDays(new Date(CreatedAt), 1)
+                dueDate: addDays(new Date(CreatedAt), 1),
+                recno: 0
             });
         } else {
             for (let i = 1; i <= Installment; i++) {
@@ -47,18 +105,23 @@ function Conciliation({ sale }) {
                     conciliated: Conciliated ? true : false,
                     installment: i,
                     value: GrossValue / Installment,
-                    dueDate: addDays(new Date(CreatedAt), i * 30)
+                    dueDate: addDays(new Date(CreatedAt), i * 31),
+                    recno: 0
                 });
             }
         }
 
         setInstallmentContents(contents);
 
-    }, [Installment, CreatedAt, GrossValue, Conciliated]);
+    }, [Installment, CreatedAt, GrossValue, Conciliated, setInstallmentContents]);
 
     useEffect(() => {
         defineInstallments();
     }, [defineInstallments])
+
+    useEffect(() => {
+
+    }, [installmentContents])
 
     return (
         <div className="sale-conciliation">
@@ -97,14 +160,34 @@ function Conciliation({ sale }) {
                 </div>
             </div>
             <div className="sale-installment">
-                {installmentContents.length && showOptions > 0 &&
-                    <Installments
-                        installmentContents={installmentContents}
-                        setShowOptions={setShowOptions}
-                    >
-                    </Installments>
+                <Installments
+                    installmentContents={installmentContents}
+                    setInstallmentContents={setInstallmentContents}
+                >
+                </Installments>
+            </div>
+            <div className="conciliation-buttons">
+                {!showOptions &&
+                    <PrimaryButton text="Salvar" onClick={handleSaveConciliation}/>
+                }
+                {showOptions &&
+                    <PrimaryButton text="Voltar" onClick={() => setShowOptions(false)} />
                 }
             </div>
+            <ToastContainer
+                style={{ fontSize: "12px", maxWidth: "300px" }}
+                position="bottom-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="dark"
+                transition:Bounce
+            />
         </div>
     );
 }
@@ -124,7 +207,8 @@ Conciliation.propTypes = {
         GrossValue: propTypes.number,
         NetValue: propTypes.number,
         Conciliated: propTypes.bool
-    })
+    }),
+    setShowModal: propTypes.func
 };
 
 export default Conciliation;

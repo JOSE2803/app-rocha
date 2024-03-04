@@ -3,12 +3,17 @@ import propTypes from 'prop-types';
 import { format } from 'date-fns';
 import formatCurrency from "../../../../utils/formatCurrency.js";
 import Modal from "../../../../components/Modal/Modal.jsx";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Conciliation from "../Conciliation/Conciliation.jsx";
 import SaleProduct from "../SaleProduct/SaleProduct.jsx";
+import { context } from "../../../../context/SafraContext/SafraContext.jsx";
 
 
 function CardSafra({ sale }) {
+
+    const {
+        setShowOptions
+    } = useContext(context);
 
     const [showModal, setShowModal] = useState(false);
 
@@ -16,14 +21,20 @@ function CardSafra({ sale }) {
 
         setShowModal(!showModal);
 
-        if (showModal){
+        if (showModal) {
             document.body.style.overflow = "";
         }
         else {
             document.body.style.overflow = "hidden";
-        }        
-        
+        }
+
     };
+
+    useEffect(() => {
+
+        return () => setShowOptions(false);
+
+    }, [showModal, setShowOptions])
 
     const {
         Autorization,
@@ -45,7 +56,7 @@ function CardSafra({ sale }) {
         <>
             {showModal &&
                 <Modal activated={showModal} onClose={handleCardClick}>
-                    <Conciliation sale={sale} />
+                    <Conciliation sale={sale} setShowModal={setShowModal} />
                 </ Modal>
             }
             <div

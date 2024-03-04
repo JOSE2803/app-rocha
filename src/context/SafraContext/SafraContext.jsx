@@ -7,11 +7,17 @@ const context = createContext();
 function SafraContextProvider({ children }) {
 
     const [data, setData] = useState([]);
+    const [installmentContents, setInstallmentContents] = useState([]);
+    const [showOptions, setShowOptions] = useState(false);
 
     return (
         <context.Provider value={{
             data,
-            setData
+            setData,
+            installmentContents,
+            setInstallmentContents,
+            showOptions,
+            setShowOptions
         }}>
             {
                 children

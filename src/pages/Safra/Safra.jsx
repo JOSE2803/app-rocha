@@ -133,7 +133,7 @@ function Safra() {
 
         setHasPosted(false);
 
-    }, []);
+    }, [setData]);
 
     const postSales = useCallback(async () => {        
 
