@@ -63,7 +63,8 @@ function Installments() {
             startDueDate: format(subDays(installment.dueDate, 5), "yyyyMMdd"),
             endDueDate: format(addDays(installment.dueDate, 5), "yyyyMMdd"),
             startPaymentTerm: "CC",
-            endPaymentTerm: "CD"
+            endPaymentTerm: "CD",
+            emptyNsu: true
         };
 
         const response = await axios.get(`http://localhost:3001/accounts-receivable`, { params });

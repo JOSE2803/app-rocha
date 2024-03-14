@@ -124,12 +124,9 @@ function Safra() {
 
         const response = await axios.get(`http://localhost:3001/safra`);
 
-        const result = response.data.data;
+        const result = removeDuplicates(response.data.data, "Nsu");
 
-        setData((pre) => {
-            const updateData = removeDuplicates([...pre, ...result], "Nsu");
-            return updateData;
-        });
+        setData(result);
 
         setHasPosted(false);
 
