@@ -27,7 +27,16 @@ function Installments() {
 
     };
 
-    const handleClickSetConciliation = (el) => {
+    const handleClickSetConciliation = async (el) => {
+
+        const params = {
+            "E1_ZCODNSU": installment.nsu,
+            "E1_ZNUMPRC": installment.installment
+        };
+
+        const response = await axios.put(`http://localhost:3001/accounts-receivable/${el.R_E_C_N_O_}`, params);
+
+        console.log(response);
 
         setInstallmentContents((current) => {
             return current.map((item) => {

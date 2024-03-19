@@ -88,6 +88,13 @@ function Conciliation({ sale, setShowModal }) {
 
     const defineInstallments = useCallback(() => {
 
+        //
+        //
+        //Chama API transendo todos os contas a receber com o NSU.
+        //Abaixo verificar se já foi conciliado ou não
+        //
+        //
+
         const contents = [];
 
         //Cartão de débito
@@ -97,7 +104,8 @@ function Conciliation({ sale, setShowModal }) {
                 installment: 1,
                 value: GrossValue,
                 dueDate: addDays(new Date(CreatedAt), 1),
-                recno: 0
+                recno: 0,
+                nsu: Nsu
             });
         } else {
             for (let i = 1; i <= Installment; i++) {
@@ -106,7 +114,8 @@ function Conciliation({ sale, setShowModal }) {
                     installment: i,
                     value: GrossValue / Installment,
                     dueDate: addDays(new Date(CreatedAt), i * 31),
-                    recno: 0
+                    recno: 0,
+                    nsu: Nsu
                 });
             }
         }
@@ -160,11 +169,7 @@ function Conciliation({ sale, setShowModal }) {
                 </div>
             </div>
             <div className="sale-installment">
-                <Installments
-                    installmentContents={installmentContents}
-                    setInstallmentContents={setInstallmentContents}
-                >
-                </Installments>
+                <Installments />
             </div>
             <div className="conciliation-buttons">
                 {!showOptions &&
