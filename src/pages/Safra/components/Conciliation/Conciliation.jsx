@@ -8,9 +8,10 @@ import { useCallback } from "react";
 import Installments from "../Installments/Installments.jsx";
 import { context } from "../../../../context/SafraContext/SafraContext.jsx";
 import PrimaryButton from "../../../../components/Button/PrimaryButton.jsx";
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
+import axios from "axios";
 
-function Conciliation({ sale, setShowModal }) {
+function Conciliation({ sale, setShowModal,showModal }) {
 
     const {
         installmentContents,
@@ -33,7 +34,6 @@ function Conciliation({ sale, setShowModal }) {
         Terminal,
         GrossValue,
         NetValue,
-        Conciliated
     } = sale;
 
     const toastError = (message) => {
@@ -49,88 +49,118 @@ function Conciliation({ sale, setShowModal }) {
         });
     };
 
-    /*const toastUpdate = (id, render, type) => {
-        toast.update(id, {
-            render,
-            type,
-            isLoading: false,
-            position: "bottom-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-        });
-    };*/
+    const handleSaveConciliation = useCallback(async () => {
 
-    const handleSaveConciliation = () => {
+        try {
+            const allConciliateds = installmentContents.every(item => item.conciliated === true);
 
-        const allConciliateds = installmentContents.every(item => item.conciliated === true);
-
-        if (!allConciliateds) {
-            toastError("Há conciliações pendentes");
-            return;
+            if (!allConciliateds) {
+                toastError("Há conciliações pendentes");
+                return;
+            }
+    
+            const params = {
+                "Nsu": Nsu,
+                "Conciliated": 1
+            };
+    
+            await axios.put(`${import.meta.env.VITE_API_URL}/safra`, params);
+    
+            setData((current) => {
+                return current.map((item) => {
+                    return item.Nsu === Nsu
+                        ? { ...item, Conciliated: true }
+                        : item
+                });
+            });
+    
+            setShowModal(false);
+        } catch (error) {
+            toastError("Falha ao salvar informações.")
         }
 
-        setData((current) => {
-            return current.map((item) => {
-                return item.Nsu === Nsu
-                    ? { ...item, Conciliated: true }
-                    : item
-            });
-        });
 
-        setShowModal(false);
 
-    };
+    }, [Nsu, installmentContents, setShowModal, setData]);
 
-    const defineInstallments = useCallback(() => {
+    const defineInstallments = useCallback(async () => {
 
-        //
-        //
-        //Chama API transendo todos os contas a receber com o NSU.
-        //Abaixo verificar se já foi conciliado ou não
-        //
-        //
+        try {
+            const params = {
+                startNsu: Nsu,
+                endNsu: Nsu
+            };
+    
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/accounts-receivable`, { params });
+   
+            const contents = [];
+    
+            //Cartão de débito
+            if (Installment === 0) {
 
-        const contents = [];
-
-        //Cartão de débito
-        if (Installment === 0) {
-            contents.push({
-                conciliated: Conciliated ? true : false,
-                installment: 1,
-                value: GrossValue,
-                dueDate: addDays(new Date(CreatedAt), 1),
-                recno: 0,
-                nsu: Nsu
-            });
-        } else {
-            for (let i = 1; i <= Installment; i++) {
                 contents.push({
-                    conciliated: Conciliated ? true : false,
-                    installment: i,
-                    value: GrossValue / Installment,
-                    dueDate: addDays(new Date(CreatedAt), i * 31),
+                    conciliated: false,
+                    installment: 1,
+                    value: GrossValue,
+                    dueDate: addDays(new Date(CreatedAt), 1),
                     recno: 0,
                     nsu: Nsu
                 });
+            } else {
+                for (let i = 1; i <= Installment; i++) {
+                    contents.push({
+                        conciliated: false,
+                        installment: i,
+                        value: GrossValue / Installment,
+                        dueDate: addDays(new Date(CreatedAt), i * 31),
+                        recno: 0,
+                        nsu: Nsu
+                    });
+                }
             }
+
+            const updateContents = contents.map((item) => {
+                const existInstallment = response.data.data.some(obj => obj.E1_ZNUMPRC == item.installment);
+
+                if (existInstallment) {
+                    const recno = response.data.data.find(obj => obj.E1_ZNUMPRC == item.installment).R_E_C_N_O_;
+                    return {...item, conciliated: true, recno: recno}
+                }
+
+                return item;
+            });
+    
+            setInstallmentContents(updateContents);
+
+        } catch (error) {
+            setShowModal(false);
+            toastError("Falha ao obter informações.")
         }
 
-        setInstallmentContents(contents);
+        
 
-    }, [Installment, CreatedAt, GrossValue, Conciliated, setInstallmentContents]);
+    }, [Installment, CreatedAt, GrossValue, setInstallmentContents, Nsu, setShowModal]);
 
     useEffect(() => {
         defineInstallments();
     }, [defineInstallments])
 
-    useEffect(() => {
+    //remove da memoria a conciliação
+    useEffect(() =>{
+        return ()=>{
+            const allConciliateds = installmentContents.every(item => item.conciliated === true);
 
-    }, [installmentContents])
+            if(!allConciliateds){
+                setData((current) => {
+                    return current.map((item) => {
+                        return item.Nsu === Nsu
+                            ? { ...item, Conciliated: false }
+                            : item
+                    });
+                });
+            }           
+        }
+    },[showModal,setData,Nsu,installmentContents])
 
     return (
         <div className="sale-conciliation">
@@ -179,20 +209,6 @@ function Conciliation({ sale, setShowModal }) {
                     <PrimaryButton text="Voltar" onClick={() => setShowOptions(false)} />
                 }
             </div>
-            <ToastContainer
-                style={{ fontSize: "12px", maxWidth: "300px" }}
-                position="bottom-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="dark"
-                transition:Bounce
-            />
         </div>
     );
 }
@@ -211,9 +227,9 @@ Conciliation.propTypes = {
         Terminal: propTypes.string,
         GrossValue: propTypes.number,
         NetValue: propTypes.number,
-        Conciliated: propTypes.bool
     }),
-    setShowModal: propTypes.func
+    setShowModal: propTypes.func,
+    showModal: propTypes.bool
 };
 
 export default Conciliation;

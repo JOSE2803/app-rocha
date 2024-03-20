@@ -122,7 +122,7 @@ function Safra() {
 
     const getSales = useCallback(async () => {
 
-        const response = await axios.get(`http://localhost:3001/safra`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/safra`);
 
         const result = removeDuplicates(response.data.data, "Nsu");
 
@@ -166,7 +166,7 @@ function Safra() {
                 }
 
                 //Faz um consulta para verificar se o Nsu já existe.
-                const response = await axios.get(`http://localhost:3001/safra`, { params });
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/safra`, { params });
 
                 //Finaliza em caso de status diferente de 200
                 if (response.status !== 200) {
@@ -199,7 +199,7 @@ function Safra() {
                 };
 
                 // Aguarda pela conclusão desta requisição de postagem
-                await axios.post(`http://localhost:3001/safra`, formattedSale);
+                await axios.post(`${import.meta.env.VITE_API_URL}/safra`, formattedSale);
 
                 return { "success": true, "message": "Registro incluído com sucesso.", "nsu": cleanValue(nsu) };
 

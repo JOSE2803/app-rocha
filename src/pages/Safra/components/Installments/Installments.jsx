@@ -6,7 +6,7 @@ import axios from "axios";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import { context } from "../../../../context/SafraContext/SafraContext.jsx";
 import { TiInputChecked, TiDelete } from "react-icons/ti";
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 function Installments() {
 
@@ -44,16 +44,19 @@ function Installments() {
 
     const handleClickSetConciliation = async (el) => {
 
-        setLoadOptions(true);
-
-        const params = {
-            "E1_ZCODNSU": installment.nsu,
-            "E1_ZNUMPRC": installment.installment
-        };
-
         try {
 
-            await axios.put(`http://localhost:3001/accounts-receivable/${el.R_E_C_N_O_}`, params);
+            if (!isClickEnabled) return;
+
+            setIsClickEnabled(false);
+            setLoadOptions(true);
+
+            const params = {
+                "E1_ZCODNSU": installment.nsu,
+                "E1_ZNUMPRC": installment.installment
+            };
+
+            await axios.put(`${import.meta.env.VITE_API_URL}/accounts-receivable/${el.R_E_C_N_O_}`, params);
 
             setInstallmentContents((current) => {
                 return current.map((item) => {
@@ -66,13 +69,16 @@ function Installments() {
             setLoadOptions(false);
 
 
-        } catch (error) {
-            setLoadOptions(false);
+        } catch (error) {            
             toastError("Falha na conciliação",);
+        } finally {
+            setLoadOptions(false);
+            setShowOptions(false);
+            setIsClickEnabled(true);
         }
 
 
-        setShowOptions(false);
+        
     };
 
     const handleClickRemoveConciliation = async (el) => {
@@ -89,22 +95,29 @@ function Installments() {
                 "E1_ZNUMPRC": ""
             };
 
-            await axios.put(`http://localhost:3001/accounts-receivable/${el.recno}`, params);
+            await axios.put(`${import.meta.env.VITE_API_URL}/accounts-receivable/${el.recno}`, params);
 
             setInstallmentContents((current) => {
                 return current.map((item) => {
-                    return item.installment === installment.installment
+                    return item.installment === el.installment
                         ? { ...item, recno: 0, conciliated: false }
                         : item
                 });
             });
+
+            const paramsSafra = {
+                "Nsu": el.nsu,
+                "Conciliated": 0
+            };
+    
+            await axios.put(`${import.meta.env.VITE_API_URL}/safra`, paramsSafra);
 
             setLoadOptions(false);
 
 
         } catch (error) {
             setLoadOptions(false);
-            toastError("Falha na conciliação",);
+            toastError("Falha ao remover conciliação",);
         } finally {
             setLoadOptions(false);
             setShowOptions(false);
@@ -127,7 +140,7 @@ function Installments() {
             emptyNsu: true
         };
 
-        const response = await axios.get(`http://localhost:3001/accounts-receivable`, { params });
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/accounts-receivable`, { params });
 
         setLoadOptions(false);
 
@@ -227,21 +240,7 @@ function Installments() {
                     {options.length <= 0 &&
                         <h4 className="not-found-options">Nenhum resultado encontrado</h4>
                     }
-                    <ToastContainer
-                        style={{ fontSize: "12px", maxWidth: "300px" }}
-                        position="bottom-right"
-                        autoClose={5000}
-                        hideProgressBar={false}
-                        newestOnTop={false}
-                        closeOnClick
-                        rtl={false}
-                        pauseOnFocusLoss
-                        draggable
-                        pauseOnHover
-                        theme="dark"
-                        transition:Bounce
-                    />
-
+                    
                 </div>
             }
 

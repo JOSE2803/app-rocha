@@ -21,18 +21,13 @@ function CardSafra({ sale }) {
 
         setShowModal(!showModal);
 
-        if (showModal) {
-            document.body.style.overflow = "";
-        }
-        else {
-            document.body.style.overflow = "hidden";
-        }
-
     };
 
     useEffect(() => {
 
-        return () => setShowOptions(false);
+        return () => {
+            setShowOptions(false);
+        }
 
     }, [showModal, setShowOptions])
 
@@ -56,7 +51,7 @@ function CardSafra({ sale }) {
         <>
             {showModal &&
                 <Modal activated={showModal} onClose={handleCardClick}>
-                    <Conciliation sale={sale} setShowModal={setShowModal} />
+                    <Conciliation sale={sale} setShowModal={setShowModal} showModal={showModal} />
                 </ Modal>
             }
             <div
