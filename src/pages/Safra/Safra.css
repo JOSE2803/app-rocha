@@ -1,4 +1,8 @@
-.file-select {
+.sales-file-select {
+    display: none;
+}
+
+.receipts-file-select {
     display: none;
 }
 

@@ -11,17 +11,25 @@ import Modal from "../../components/Modal/Modal.jsx";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { context } from "../../context/SafraContext/SafraContext.jsx";
+import Receipts from "./components/Receipts/Receipts.jsx";
 
 function Safra() {
 
     const { data, setData } = useContext(context);
     const [sales, setSales] = useState([]);
+    const [receipts, setReceipts] = useState([]);
     const [hasPosted, setHasPosted] = useState(true);
     const [showModal, setShowModal] = useState(false);
 
+    const [showModalReceipts, setShowModalReceipts] = useState(false);
+
 
     const handleSalesClick = () => {
-        document.getElementById("file-select").click();
+        document.getElementById("sales-file-select").click();
+    };
+
+    const handleReceiptsClick = () => {
+        document.getElementById("receipts-file-select").click();
     };
 
     /*const toastSuccess = (message) => {
@@ -66,14 +74,19 @@ function Safra() {
         });
     };
 
-    const handleClickFilters = () => {
+    const handleClickModalReceipts = () => {
+        setShowModal(!showModal);
+        setShowModalReceipts(!showModalReceipts);
+    };
+
+    const handleClickModal = () => {
         setShowModal(!showModal);
     };
 
     // Função para limpar os valores das propriedades
     const cleanValue = (value) => value.replace("'", "").trim().replace(",", ".");
 
-    const fileRead = useCallback(async (e) => {
+    const salesFileReading = useCallback(async (e) => {
 
         const expectedKeys = [
             "AAAAMM",
@@ -110,7 +123,70 @@ function Safra() {
                 toastError("Arquivo inválido");
             } else {
                 setSales(data);
-            }            
+            }
+
+        } catch (error) {
+            toastError("Erro inesperado");
+        } finally {
+            e.target.value = "";
+        }
+
+    }, []);
+
+    const receiptsFileReading = useCallback(async (e) => {
+
+        const expectedKeys = [
+            "T",
+            "EC CTLZ",
+            "ANOMES",
+            "TERMINAL",
+            "DT VENDA",
+            "HORA",
+            "DT PREVIST",
+            "DT EFETIVA",
+            "NSU",
+            "PRODUTO",
+            "MODALIDADE",
+            "PL",
+            "NCAR",
+            "VALOR LIQUIDO",
+            "TXADM",
+            "ANTEC",
+            "OPERACAO",
+            "EC ORIGEM",
+            "AUTORI",
+            "VALOR TOTAL VENDA",
+            "VALOR BRUTO PARC.",
+            "TP",
+            "CODIGO DE OPERACAO",
+            "SEQ OPER",
+            "TP NEGOCIO",
+            "VALOR NEGOCIACAO",
+            "BCO",
+            "TIPO CONTA",
+            "AGC",
+            "NUMERO CONTA",
+            "CRT ESTRANG"
+
+        ];
+
+        const file = e.target.files[0];
+
+        if (!file) {
+            toastError("Arquivo inválido");
+            return;
+        }
+
+        try {
+            const data = await csvRead(file, { header: true, skipEmptyLines: true });
+
+            const validData = data.every(data => keysValidation(data, expectedKeys));
+
+            if (!validData || data.length <= 0) {
+                toastError("Arquivo inválido");
+            } else {
+                setReceipts(data);
+            }
 
         } catch (error) {
             toastError("Erro inesperado");
@@ -132,14 +208,14 @@ function Safra() {
 
     }, [setData]);
 
-    const postSales = useCallback(async () => {        
+    const postSales = useCallback(async () => {
 
         if (sales.length === 0) return;
 
         const id = toast.loading("Aguarde...");
 
         try {
-            
+
             // Utiliza Promise.all para aguardar a conclusão de todas as promessas de postagem
             const result = await Promise.all(sales.map(async (sale) => {
 
@@ -231,6 +307,15 @@ function Safra() {
     }, [sales, postSales]);
 
     useEffect(() => {
+
+        if (receipts.length > 0) {
+            setShowModalReceipts(true);
+            setShowModal(true);
+        }
+
+    }, [receipts])
+
+    useEffect(() => {
         if (hasPosted) {
             getSales();
         }
@@ -238,15 +323,22 @@ function Safra() {
 
     return (
         <div className="safra-window">
-            <Modal activated={showModal} onClose={handleClickFilters}></Modal>
+
+            {showModalReceipts &&
+                <Modal activated={showModal} onClose={handleClickModalReceipts}>
+                    <Receipts receipts={receipts}/>
+                </Modal>
+            }
+
             <div className="tittle-bar">
                 <h1>Safra Cartões</h1>
             </div>
             <div className="buttons-bar">
-                <input id="file-select" className="file-select" type="file" accept=".csv" onChange={fileRead} />
+                <input id="sales-file-select" className="sales-file-select" type="file" accept=".csv" onChange={salesFileReading} />
+                <input id="receipts-file-select" className="receipts-file-select" type="file" accept=".csv" onChange={receiptsFileReading} />
                 <PrimaryButton text="Vendas" onClick={handleSalesClick} />
-                <PrimaryButton text="Recebimentos" onClick={handleSalesClick} />
-                <PrimaryButton text="Filtros" onClick={handleClickFilters} />
+                <PrimaryButton text="Recebimentos" onClick={handleReceiptsClick} />
+                <PrimaryButton text="Filtros" onClick={handleClickModal} />
             </div>
             <div className="items">
                 {data.length > 0 &&

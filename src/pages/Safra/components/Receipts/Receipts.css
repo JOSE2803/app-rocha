@@ -1,0 +1,34 @@
+.receipts {
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 40vh;
+    overflow: auto;
+}
+
+.receipts-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.receipts-options {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.receipt-date {
+    height: 35px;
+    width: 200px;
+    text-align: center;
+    border-radius: 10px;
+}
