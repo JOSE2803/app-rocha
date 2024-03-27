@@ -50,7 +50,7 @@ const groupReceiptsByBranch = async (receipts, selectedReceiptDate) => {
                         "type": "warning",
                         "codeType": "w2",
                         "message": "Foi encontrado mais de uma conciliação para o mesmo recebimento."
-                    }, ...dataItem, ...response.data.data
+                    }, ...dataItem, ...response.data
                 }
             }
 
@@ -60,7 +60,7 @@ const groupReceiptsByBranch = async (receipts, selectedReceiptDate) => {
                         "type": "warning",
                         "codeType": "w3",
                         "message": "Conciliação já baixada, compensada ou líquidada."
-                    }, ...dataItem, ...response.data.data
+                    }, ...dataItem, ...response.data
                 }
             }
 
@@ -70,7 +70,7 @@ const groupReceiptsByBranch = async (receipts, selectedReceiptDate) => {
                         "type": "warning",
                         "codeType": "w4",
                         "message": "O valor recebido difere do limite de tolerância do saldo do título conciliado."
-                    }, ...dataItem, ...response.data.data
+                    }, ...dataItem, ...response.data
                 }
             }
 
@@ -79,7 +79,7 @@ const groupReceiptsByBranch = async (receipts, selectedReceiptDate) => {
                     "type": "success",
                     "codeType": "s1",
                     "message": "Conciliação encontrada com sucesso."
-                }, ...dataItem, ...response.data.data
+                }, ...dataItem, ...response.data
             }
 
         } catch (error) {
@@ -94,9 +94,7 @@ const groupReceiptsByBranch = async (receipts, selectedReceiptDate) => {
 
     }));
 
-
-
-    console.log(result.filter(el => el !== undefined));
+    return result.filter(el => el !== undefined);
 };
 
 const cleanValue = (value) => value.replace("'", "").trim().replace(",", ".");
