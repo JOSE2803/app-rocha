@@ -67,7 +67,7 @@ function Receipts({ receipts }) {
                     A6_AGENCIA: "0023",
                     A6_NUMCON: "301814",
                     ED_CODIGO: "1101",
-                    E1_BAIXA: format(selectReceiptDate(), "yyyMMdd")
+                    E1_BAIXA: format(selectReceiptDate(), "yyyyMMdd")
                 };
 
                 try {
