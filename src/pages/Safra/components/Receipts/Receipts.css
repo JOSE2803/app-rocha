@@ -3,7 +3,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
     max-height: 40vh;
     overflow: auto;
 }
@@ -42,6 +42,39 @@
 
 .receipts-loading-data {
     height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.receipts-loaded-data {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+
+}
+
+.receipts-item-loaded-data {
+    width: 100%;
+    background-color: #EDEDF0;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+
+}
+
+.receipts-item-loaded-data:hover {
+    background-color: #CACAD2;
+}
+
+.receipts-bottom {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -3,13 +3,17 @@ import PrimaryButton from "../../../../components/Button/PrimaryButton";
 import { groupReceiptsByBranch } from './utils';
 import { toast } from 'react-toastify';
 import Spinner from '../../../../components/Spinner/Spinner';
+import formatCurrency from "../../../../utils/formatCurrency.js";
+import { format } from 'date-fns';
+import axios from "axios";
 
 import "./Receipts.css";
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 
 function Receipts({ receipts }) {
 
     const [data, setData] = useState([]);
+    const [sumOfReceipts, setSumOfReceipts] = useState([]);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isEmptyData, setIsEmptyData] = useState(false);
@@ -40,9 +44,45 @@ function Receipts({ receipts }) {
 
     };
 
-    const getData = async () => {
+    //Efetuar as baixas
+    const registryOfReceipt = async () => {
 
-        setIsLoading(true);
+        const numberOfRegistries = 10;
+
+        for (const item of sumOfReceipts) {
+            const branch = item.filial.trim();
+            const receiptsByBranch = data[branch];
+
+            for (let i = 0; i < receiptsByBranch.length; i += numberOfRegistries) {
+                const subArray = receiptsByBranch.slice(i, i + numberOfRegistries);
+                const recnos = subArray.map(el => el.data[0].R_E_C_N_O_);
+
+                const params = {
+                    branch: branch
+                };
+
+                const body = {
+                    R_E_C_N_O_: recnos,
+                    A6_COD: "422",
+                    A6_AGENCIA: "0023",
+                    A6_NUMCON: "301814",
+                    ED_CODIGO: "1101",
+                    E1_BAIXA: format(selectReceiptDate(), "yyyMMdd")
+                };
+
+                try {
+                    await axios.post(`${import.meta.env.VITE_API_URL}/accounts-receivable/automatic-writedown`, body, { params });
+                    alert("BAIXADO");
+                } catch (error) {
+                    console.error('Erro ao fazer a chamada da API:', error);
+                }
+            }
+        }
+
+        getData();
+    };
+
+    const getData = async () => {
 
         const selectedReceiptDate = selectReceiptDate();
 
@@ -51,46 +91,52 @@ function Receipts({ receipts }) {
             return;
         }
 
+        setIsLoading(true);
+
         const result = await groupReceiptsByBranch(receipts, selectedReceiptDate);
 
         if (!result || result.length <= 0) {
             setIsEmptyData(true);
         } else {
+            await groupedByBranch(result);
             setIsEmptyData(false);
         }
 
-        setData(result)
         setIsLoading(false);
         setIsLoaded(true);
 
     };
 
     //Retonar um objeto agrupado por filial desde que o "type" seja "success".
-    const groupedByBranch = useCallback(() => {
+    const groupedByBranch = async (result) => {
 
-        const branchs = data.reduce((acc, item) => {
+        const receiptsByBranch = await result.reduce((acc, item) => {
 
-            if (item.type === "success") {
+            if (item.type.trim() === "success") {
                 const branchValue = item.data[0].E1_FILIAL;
-    
+
                 acc[branchValue] = acc[branchValue] || [];
                 acc[branchValue].push(item);
             }
-    
+
             return acc;
         }, {});
 
-        console.log(Object.keys(branchs));
+        const groupedArray = Object.entries(receiptsByBranch).map(([filial, items]) => {
+            const total = items.reduce((acc, item) => {
+                acc.grossValueReceived += item.grossValueReceived;
+                acc.netValueReceived += item.netValueReceived;
+                acc.E1_SALDO += item.data[0].E1_SALDO;
+                return acc;
+            }, { filial: filial, grossValueReceived: 0, netValueReceived: 0, E1_SALDO: 0 });
 
-    }, [data]); 
+            return total;
+        });
 
-    useEffect(() => {
+        setData(receiptsByBranch);
+        setSumOfReceipts(groupedArray);
 
-        if (isLoaded && !isEmptyData) {
-            groupedByBranch()
-        }
-
-    }, [isLoaded, isEmptyData, groupedByBranch])
+    };
 
     return (
         <div className="receipts">
@@ -118,16 +164,24 @@ function Receipts({ receipts }) {
 
             {/* Verifica se os dados fora carregados e se não esta vazio */}
             {isLoaded && !isEmptyData && !isLoading &&
-                <div>
-                    CARREGOU OS DADOS
+                <div className="receipts-loaded-data">
+                    {sumOfReceipts.map((item) => (
+                        <div className="receipts-item-loaded-data" key={`${item.filial}`}>
+                            <h5>{item.filial}</h5>
+                            <h5>{`Safra: ${formatCurrency(item.grossValueReceived, "BRL")}`}</h5>
+                            <h5>{`Taxa: ${formatCurrency(item.grossValueReceived - item.netValueReceived, "BRL")}`}</h5>
+                            <h5>{`Protheus: ${formatCurrency(item.E1_SALDO, "BRL")}`}</h5>
+                        </div>
+
+                    ))}
+                </div>
+            }
+            {isLoaded && !isEmptyData && !isLoading &&
+                <div className="receipts-bottom">
+                    <PrimaryButton text="Baixar" onClick={registryOfReceipt} />
                 </div>
             }
 
-            {/* <div>
-                {receipts.map((item) => (
-                    <h1 key={`${item.NSU}${item.PL}`}>{item.PL}</h1>
-                ))}
-            </div> */}
         </div>
 
     );

@@ -54,7 +54,7 @@ const groupReceiptsByBranch = async (receipts, selectedReceiptDate) => {
                 }
             }
 
-            if (response.data.data.E1_SALDO <= 0) {
+            if (response.data.data[0].E1_SALDO <= 0) {
                 return {
                     ...{
                         "type": "warning",
@@ -64,7 +64,7 @@ const groupReceiptsByBranch = async (receipts, selectedReceiptDate) => {
                 }
             }
 
-            if (response.data.data.E1_SALDO < lowerLimitGrossValueReceived || response.data.data.E1_SALDO > upperLimitGrossValueReceived) {
+            if (response.data.data[0].E1_SALDO < lowerLimitGrossValueReceived || response.data.data[0].E1_SALDO > upperLimitGrossValueReceived) {
                 return {
                     ...{
                         "type": "warning",
@@ -73,6 +73,8 @@ const groupReceiptsByBranch = async (receipts, selectedReceiptDate) => {
                     }, ...dataItem, ...response.data
                 }
             }
+
+            console.log("FIM");
 
             return {
                 ...{
