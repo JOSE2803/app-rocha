@@ -13,6 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { context } from "../../context/SafraContext/SafraContext.jsx";
 import Receipts from "./components/Receipts/Receipts.jsx";
 import { useInView } from 'react-intersection-observer';
+import Filters from "./components/Filters/Filters.jsx";
 
 function Safra() {
 
@@ -24,6 +25,7 @@ function Safra() {
     const [loop, setLoop] = useState(0);
 
     const [showModalReceipts, setShowModalReceipts] = useState(false);
+    const [showModasFilters,setShowModalFilters] = useState(false)
 
     const offset = useRef(0);
 
@@ -88,9 +90,9 @@ function Safra() {
         setShowModal(!showModal);
         setShowModalReceipts(!showModalReceipts);
     };
-
-    const handleClickModal = () => {
+    const handleClickModalFilters = () => {
         setShowModal(!showModal);
+        setShowModalFilters(!showModasFilters);
     };
 
     // Função para limpar os valores das propriedades
@@ -357,6 +359,13 @@ function Safra() {
                     </Modal>
                 }
 
+                {
+                    showModasFilters &&
+                        <Modal activated={showModasFilters} onClose={handleClickModalFilters}>
+                            <Filters/>
+                        </Modal>
+                }
+
                 <div className="tittle-bar">
                     <h1>Safra Cartões</h1>
                 </div>
@@ -365,7 +374,7 @@ function Safra() {
                     <input id="receipts-file-select" className="receipts-file-select" type="file" accept=".csv" onChange={receiptsFileReading} />
                     <PrimaryButton text="Vendas" onClick={handleSalesClick} />
                     <PrimaryButton text="Recebimentos" onClick={handleReceiptsClick} />
-                    <PrimaryButton text="Filtros" onClick={handleClickModal} />
+                    <PrimaryButton text="Filtros" onClick={handleClickModalFilters} />
                 </div>
                 <div className="items">
                     {data.length > 0 &&
