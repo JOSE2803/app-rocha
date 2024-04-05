@@ -1,7 +1,7 @@
 import "./Safra.css";
 import { csvRead } from "../../utils/csvRead";
 import { keysValidation } from "../../utils/keysValidation"; // Supondo que você mova isso para um util
-import { useEffect, useCallback, useState, useContext, useRef } from "react";
+import { useEffect, useCallback, useState, useContext } from "react";
 import PrimaryButton from "../../components/Button/PrimaryButton";
 import CardSafra from "./components/CardSafra/CardSafra";
 import axios from "axios";
@@ -17,7 +17,7 @@ import Filters from "./components/Filters/Filters.jsx";
 
 function Safra() {
 
-    const { data, setData } = useContext(context);
+    const { data, setData,offset,params,setParams,filtered,setFiltered} = useContext(context);
     const [sales, setSales] = useState([]);
     const [receipts, setReceipts] = useState([]);
     const [hasPosted, setHasPosted] = useState(true);
@@ -28,7 +28,7 @@ function Safra() {
     const [showModasFilters,setShowModalFilters] = useState(false)
 
 
-    const offset = useRef(0);
+    
     const { ref, inView } = useInView({});
 
     const dataLength = () => {
@@ -90,6 +90,14 @@ function Safra() {
         setShowModal(!showModal);
         setShowModalReceipts(!showModalReceipts);
     };
+
+    const hendlerSetInitialParams = ()=>{
+        setParams({
+            offset: offset.current,
+            limit: 2
+        })
+        setFiltered(false)
+    }
     
     const handleClickModalFilters = () => {
         setShowModal(!showModal);
@@ -210,13 +218,12 @@ function Safra() {
     }, []);
 
     const getSales = useCallback(async () => {
-        const params = {
-            offset: offset.current,
-            limit: 2
-        };
-
+        setParams((prevParams) => ({
+            ...prevParams,
+            offset: offset.current
+        }));
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/safra`, { params });
-
+       
         setData((pre) => {
             const updateData = removeDuplicates([...pre, ...response.data.data], "Nsu");
             return updateData;
@@ -227,7 +234,7 @@ function Safra() {
 
         setLoop(pre => pre + 1);
 
-    }, [setData,offset]);
+    }, [setData,offset,params,setParams]);
 
     const postSales = useCallback(async () => {
 
@@ -376,6 +383,11 @@ function Safra() {
                     <PrimaryButton text="Vendas" onClick={handleSalesClick} />
                     <PrimaryButton text="Recebimentos" onClick={handleReceiptsClick} />
                     <PrimaryButton text="Filtros" onClick={handleClickModalFilters} />
+                    {
+                        filtered &&(
+                            <PrimaryButton text="Limpar filtros" onClick={hendlerSetInitialParams}/>
+                        )
+                    }
                 </div>
                 <div className="items">
                     {

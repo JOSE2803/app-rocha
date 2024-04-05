@@ -1,22 +1,32 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { context } from "../../../../context/SafraContext/SafraContext";
 import axios from "axios"
+import { cleanValue } from "../Receipts/utils";
 
 import "./Filters.css";
 
 function Filters() {
     const [inputNsu,setInputNsu] = useState('');
-    const {setData} = useContext(context)
+    const {setData,setParams,params,setFiltered} = useContext(context)
+
+    useEffect(()=>{
+        if(inputNsu.length > 0){
+            setParams((current)=>{
+                return {
+                    ...current,
+                    startNsu: cleanValue(inputNsu),
+                    endNsu: cleanValue(inputNsu)
+                }
+            })
+            
+        }
+    },[inputNsu,setParams,setFiltered])
 
     const hendlerKeyDonwEvent = async (ev)=>{
         if(ev.key == 'Enter'){
-            const params = {
-                startNsu: inputNsu,
-                endNsu: inputNsu
-            }
-            
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/safra`,{params})
             setData(response.data.data)
+            setFiltered(true)
         }
     }
 
