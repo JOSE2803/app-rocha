@@ -90,6 +90,7 @@ function Safra() {
         setShowModal(!showModal);
         setShowModalReceipts(!showModalReceipts);
     };
+    
     const handleClickModalFilters = () => {
         setShowModal(!showModal);
         setShowModalFilters(!showModasFilters);
@@ -380,7 +381,7 @@ function Safra() {
                     {data.length > 0 &&
 
                         data.map((el) => (
-                            <CardSafra key={el.Nsu} sale={el} />
+                            <CardSafra key={el.Nsu} sale={el}  vb />
                         ))}
                 </div>
                 <ToastContainer
