@@ -1,7 +1,7 @@
 import "./Safra.css";
 import { csvRead } from "../../utils/csvRead";
 import { keysValidation } from "../../utils/keysValidation"; // Supondo que você mova isso para um util
-import { useEffect, useCallback, useState, useContext, useRef } from "react";
+import { useEffect, useCallback, useState, useContext } from "react";
 import PrimaryButton from "../../components/Button/PrimaryButton";
 import CardSafra from "./components/CardSafra/CardSafra";
 import axios from "axios";
@@ -13,10 +13,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import { context } from "../../context/SafraContext/SafraContext.jsx";
 import Receipts from "./components/Receipts/Receipts.jsx";
 import { useInView } from 'react-intersection-observer';
+import Filters from "./components/Filters/Filters.jsx";
 
 function Safra() {
 
-    const { data, setData } = useContext(context);
+    const { data, setData,offset,params,setParams,filtered,setFiltered} = useContext(context);
     const [sales, setSales] = useState([]);
     const [receipts, setReceipts] = useState([]);
     const [hasPosted, setHasPosted] = useState(true);
@@ -24,9 +25,10 @@ function Safra() {
     const [loop, setLoop] = useState(0);
 
     const [showModalReceipts, setShowModalReceipts] = useState(false);
+    const [showModasFilters,setShowModalFilters] = useState(false)
 
-    const offset = useRef(0);
 
+    
     const { ref, inView } = useInView({});
 
     const dataLength = () => {
@@ -89,8 +91,17 @@ function Safra() {
         setShowModalReceipts(!showModalReceipts);
     };
 
-    const handleClickModal = () => {
+    const hendlerSetInitialParams = ()=>{
+        setParams({
+            offset: offset.current,
+            limit: 2
+        })
+        setFiltered(false)
+    }
+    
+    const handleClickModalFilters = () => {
         setShowModal(!showModal);
+        setShowModalFilters(!showModasFilters);
     };
 
     // Função para limpar os valores das propriedades
@@ -207,24 +218,22 @@ function Safra() {
     }, []);
 
     const getSales = useCallback(async () => {
-
-        const params = {
-            offset: offset.current,
-            limit: 2
-        };
-
+        setParams((prevParams) => ({
+            ...prevParams,
+            offset: offset.current
+        }));
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/safra`, { params });
-
+       
         setData((pre) => {
             const updateData = removeDuplicates([...pre, ...response.data.data], "Nsu");
             return updateData;
         });
+      
+        setHasPosted(false);
 
         setLoop(pre => pre + 1);
 
-        setHasPosted(false);        
-
-    }, [setData]);
+    }, [setData,offset,params,setParams]);
 
     const postSales = useCallback(async () => {
 
@@ -359,6 +368,13 @@ function Safra() {
                     </Modal>
                 }
 
+                {
+                    showModasFilters &&
+                        <Modal activated={showModasFilters} onClose={handleClickModalFilters}>
+                            <Filters/>
+                        </Modal>
+                }
+
                 <div className="tittle-bar">
                     <h1>Safra Cartões</h1>
                 </div>
@@ -367,14 +383,22 @@ function Safra() {
                     <input id="receipts-file-select" className="receipts-file-select" type="file" accept=".csv" onChange={receiptsFileReading} />
                     <PrimaryButton text="Vendas" onClick={handleSalesClick} />
                     <PrimaryButton text="Recebimentos" onClick={handleReceiptsClick} />
-                    <PrimaryButton text="Filtros" onClick={handleClickModal} />
+                    <PrimaryButton text="Filtros" onClick={handleClickModalFilters} />
+                    {
+                        filtered &&(
+                            <PrimaryButton text="Limpar filtros" onClick={hendlerSetInitialParams}/>
+                        )
+                    }
                 </div>
                 <div className="items">
-                    {data.length > 0 &&
+                    {
+                        data.length > 0 &&
 
                         data.map((el) => (
-                            <CardSafra key={el.Nsu} sale={el} />
-                        ))}
+                                <CardSafra key={el.Nsu} sale={el}  vb />
+                            )
+                        )
+                    }
                 </div>
                 <ToastContainer
                     style={{ fontSize: "12px", maxWidth: "300px" }}
