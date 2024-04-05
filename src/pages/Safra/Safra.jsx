@@ -1,7 +1,7 @@
 import "./Safra.css";
 import { csvRead } from "../../utils/csvRead";
 import { keysValidation } from "../../utils/keysValidation"; // Supondo que você mova isso para um util
-import { useEffect, useCallback, useState, useContext } from "react";
+import { useEffect, useCallback, useState, useContext, useRef } from "react";
 import PrimaryButton from "../../components/Button/PrimaryButton";
 import CardSafra from "./components/CardSafra/CardSafra";
 import axios from "axios";
@@ -12,6 +12,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { context } from "../../context/SafraContext/SafraContext.jsx";
 import Receipts from "./components/Receipts/Receipts.jsx";
+import { useInView } from 'react-intersection-observer';
 
 function Safra() {
 
@@ -20,8 +21,17 @@ function Safra() {
     const [receipts, setReceipts] = useState([]);
     const [hasPosted, setHasPosted] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [loop, setLoop] = useState(0);
 
     const [showModalReceipts, setShowModalReceipts] = useState(false);
+
+    const offset = useRef(0);
+
+    const { ref, inView } = useInView({});
+
+    const dataLength = () => {
+        offset.current = data.length;
+    };
 
 
     const handleSalesClick = () => {
@@ -198,13 +208,21 @@ function Safra() {
 
     const getSales = useCallback(async () => {
 
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/safra`);
+        const params = {
+            offset: offset.current,
+            limit: 2
+        };
 
-        const result = removeDuplicates(response.data.data, "Nsu");
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/safra`, { params });
 
-        setData(result);
+        setData((pre) => {
+            const updateData = removeDuplicates([...pre, ...response.data.data], "Nsu");
+            return updateData;
+        });
 
         setHasPosted(false);
+
+        setLoop(pre => pre + 1);
 
     }, [setData]);
 
@@ -300,6 +318,14 @@ function Safra() {
     }, [sales]);
 
     useEffect(() => {
+
+        if (inView) {
+            getSales();
+        }
+
+    }, [inView, loop, getSales])
+
+    useEffect(() => {
         if (sales.length > 0) {
             setHasPosted(false);
             postSales();
@@ -322,47 +348,51 @@ function Safra() {
     }, [hasPosted, getSales]);
 
     return (
-        <div className="safra-window">
+        <>
+            <div className="safra-window">
 
-            {showModalReceipts &&
-                <Modal activated={showModal} onClose={handleClickModalReceipts}>
-                    <Receipts receipts={receipts} setShowModal={setShowModal}/>
-                </Modal>
-            }
+                {showModalReceipts &&
+                    <Modal activated={showModal} onClose={handleClickModalReceipts}>
+                        <Receipts receipts={receipts} setShowModal={setShowModal} />
+                    </Modal>
+                }
 
-            <div className="tittle-bar">
-                <h1>Safra Cartões</h1>
+                <div className="tittle-bar">
+                    <h1>Safra Cartões</h1>
+                </div>
+                <div className="buttons-bar">
+                    <input id="sales-file-select" className="sales-file-select" type="file" accept=".csv" onChange={salesFileReading} />
+                    <input id="receipts-file-select" className="receipts-file-select" type="file" accept=".csv" onChange={receiptsFileReading} />
+                    <PrimaryButton text="Vendas" onClick={handleSalesClick} />
+                    <PrimaryButton text="Recebimentos" onClick={handleReceiptsClick} />
+                    <PrimaryButton text="Filtros" onClick={handleClickModal} />
+                </div>
+                <div className="items">
+                    {data.length > 0 &&
+
+                        data.map((el) => (
+                            <CardSafra key={el.Nsu} sale={el} />
+                        ))}
+                </div>
+                <ToastContainer
+                    style={{ fontSize: "12px", maxWidth: "300px" }}
+                    position="bottom-right"
+                    autoClose={5000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="dark"
+                    transition:Bounce
+                />
+                <div ref={ref}></div>
             </div>
-            <div className="buttons-bar">
-                <input id="sales-file-select" className="sales-file-select" type="file" accept=".csv" onChange={salesFileReading} />
-                <input id="receipts-file-select" className="receipts-file-select" type="file" accept=".csv" onChange={receiptsFileReading} />
-                <PrimaryButton text="Vendas" onClick={handleSalesClick} />
-                <PrimaryButton text="Recebimentos" onClick={handleReceiptsClick} />
-                <PrimaryButton text="Filtros" onClick={handleClickModal} />
-            </div>
-            <div className="items">
-                {data.length > 0 &&
+            {dataLength()}
+        </>
 
-                    data.map((el) => (
-                        <CardSafra key={el.Nsu} sale={el} />
-                    ))}
-            </div>
-            <ToastContainer
-                style={{ fontSize: "12px", maxWidth: "300px" }}
-                position="bottom-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="dark"
-                transition:Bounce
-            />
-
-        </div>
     );
 }
 
