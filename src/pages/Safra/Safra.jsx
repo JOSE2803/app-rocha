@@ -228,7 +228,6 @@ function Safra() {
             const updateData = removeDuplicates([...pre, ...response.data.data], "Nsu");
             return updateData;
         });
-
       
         setHasPosted(false);
 
@@ -300,8 +299,8 @@ function Safra() {
                     ForeignCard: cleanValue(foreignCard) === "N" ? 0 : 1,
                     NetValue: parseFloat(cleanValue(netValue)),
                     Conciliated: 0
-                };
-
+                };    
+                
                 // Aguarda pela conclusão desta requisição de postagem
                 await axios.post(`${import.meta.env.VITE_API_URL}/safra`, formattedSale);
 
@@ -316,6 +315,8 @@ function Safra() {
             } else {
                 toastUpdate(id, "Falha na importação", "error");
             }
+
+            setData([]);
 
             // Só atualiza o estado quando todas as postagens forem completadas
             setHasPosted(true);
