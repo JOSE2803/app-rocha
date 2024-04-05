@@ -17,7 +17,7 @@ import Filters from "./components/Filters/Filters.jsx";
 
 function Safra() {
 
-    const { data, setData } = useContext(context);
+    const { filteredData, setData } = useContext(context);
     const [sales, setSales] = useState([]);
     const [receipts, setReceipts] = useState([]);
     const [hasPosted, setHasPosted] = useState(true);
@@ -32,7 +32,7 @@ function Safra() {
     const { ref, inView } = useInView({});
 
     const dataLength = () => {
-        offset.current = data.length;
+        offset.current = filteredData.length;
     };
 
 
@@ -210,7 +210,6 @@ function Safra() {
     }, []);
 
     const getSales = useCallback(async () => {
-
         const params = {
             offset: offset.current,
             limit: 2
@@ -223,6 +222,7 @@ function Safra() {
             return updateData;
         });
 
+      
         setHasPosted(false);
 
         setLoop(pre => pre + 1);
@@ -378,11 +378,14 @@ function Safra() {
                     <PrimaryButton text="Filtros" onClick={handleClickModalFilters} />
                 </div>
                 <div className="items">
-                    {data.length > 0 &&
+                    {
+                        filteredData.length > 0 &&
 
-                        data.map((el) => (
-                            <CardSafra key={el.Nsu} sale={el}  vb />
-                        ))}
+                        filteredData.map((el) => (
+                                <CardSafra key={el.Nsu} sale={el}  vb />
+                            )
+                        )
+                    }
                 </div>
                 <ToastContainer
                     style={{ fontSize: "12px", maxWidth: "300px" }}
