@@ -326,7 +326,7 @@ function Safra() {
 
             {showModalReceipts &&
                 <Modal activated={showModal} onClose={handleClickModalReceipts}>
-                    <Receipts receipts={receipts}/>
+                    <Receipts receipts={receipts} setShowModal={setShowModal}/>
                 </Modal>
             }
 

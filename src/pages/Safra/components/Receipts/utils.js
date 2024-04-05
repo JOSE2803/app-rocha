@@ -74,8 +74,6 @@ const groupReceiptsByBranch = async (receipts, selectedReceiptDate) => {
                 }
             }
 
-            console.log("FIM");
-
             return {
                 ...{
                     "type": "success",

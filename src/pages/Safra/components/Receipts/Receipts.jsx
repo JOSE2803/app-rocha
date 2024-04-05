@@ -31,6 +31,22 @@ function Receipts({ receipts }) {
         });
     };
 
+    const toastUpdate = (id, render, type) => {
+        toast.update(id, {
+            render,
+            type,
+            isLoading: false,
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+        });
+    };
+
     //Retorna a data selecionada já formatada em data.
     const selectReceiptDate = () => {
 
@@ -47,39 +63,47 @@ function Receipts({ receipts }) {
     //Efetuar as baixas
     const registryOfReceipt = async () => {
 
-        const numberOfRegistries = 10;
+        const id = toast.loading("Aguarde...");
+
+        const allReceipts = [];
 
         for (const item of sumOfReceipts) {
+
             const branch = item.filial.trim();
             const receiptsByBranch = data[branch];
 
-            for (let i = 0; i < receiptsByBranch.length; i += numberOfRegistries) {
-                const subArray = receiptsByBranch.slice(i, i + numberOfRegistries);
-                const recnos = subArray.map(el => el.data[0].R_E_C_N_O_);
+            receiptsByBranch.map((item) => {
 
-                const params = {
-                    branch: branch
-                };
+                allReceipts.push(item);
 
-                const body = {
-                    R_E_C_N_O_: recnos,
-                    A6_COD: "422",
-                    A6_AGENCIA: "0023",
-                    A6_NUMCON: "301814",
-                    ED_CODIGO: "1101",
-                    E1_BAIXA: format(selectReceiptDate(), "yyyyMMdd")
-                };
-
-                try {
-                    await axios.post(`${import.meta.env.VITE_API_URL}/accounts-receivable/automatic-writedown`, body, { params });
-                    alert("BAIXADO");
-                } catch (error) {
-                    console.error('Erro ao fazer a chamada da API:', error);
-                }
-            }
+            });
         }
 
-        getData();
+        // Utiliza Promise.all para aguardar a conclusão de todas as promessas de postagem
+        const result = await Promise.all(allReceipts.map(async (receipt) => {
+
+            const recno = receipt.data[0].R_E_C_N_O_;
+
+            const params = {
+                "E1_ZBXSAFR": format(receipt.receiptDate, "yyyyMMdd")
+            };
+
+            try {
+                await axios.put(`${import.meta.env.VITE_API_URL}/accounts-receivable/${recno}`, params);
+                return { "success": true };
+            } catch (error) {
+                return { "success": false, "message": error.message };
+            }
+        }));
+
+        const allSuccess = result.every(item => item.success === true);
+
+        if (allSuccess) {
+            toastUpdate(id, "Recebimentos atualizados, finalizar baixas pelo Protheus.", "success");            
+        } else {
+            toastUpdate(id, "Um ou mais recebimentos não foram atualizados.", "error");
+        }
+
     };
 
     const getData = async () => {
@@ -178,7 +202,7 @@ function Receipts({ receipts }) {
             }
             {isLoaded && !isEmptyData && !isLoading &&
                 <div className="receipts-bottom">
-                    <PrimaryButton text="Baixar" onClick={registryOfReceipt} />
+                    <PrimaryButton text="Salvar" onClick={registryOfReceipt} />
                 </div>
             }
 
