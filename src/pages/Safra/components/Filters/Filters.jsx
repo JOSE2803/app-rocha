@@ -1,22 +1,25 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { context } from "../../../../context/SafraContext/SafraContext";
 import axios from "axios"
+
 import "./Filters.css";
 
 function Filters() {
     const [inputNsu,setInputNsu] = useState('');
-    const {setFilteredData} = useContext(context)
-    const chengeInputNsu = (ev)=>{
-        setInputNsu(ev.target.value)
+    const {setData} = useContext(context)
+
+    const hendlerKeyDonwEvent = async (ev)=>{
+        if(ev.key == 'Enter'){
+            const params = {
+                startNsu: inputNsu,
+                endNsu: inputNsu
+            }
+            
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/safra`,{params})
+            setData(response.data.data)
+        }
     }
 
-    useEffect(()=>{
-        if(inputNsu.length > 0 ){
-            setFilteredData((current)=>{
-                return current.filter((el)=> el.Nsu.includes(inputNsu))
-            })
-        }
-    },[inputNsu,setFilteredData])
     return ( 
         <div className="filter-content">
             <h2>Filtros</h2>
@@ -26,7 +29,8 @@ function Filters() {
                     placeholder="Pesquisar NSU..."
                     className="filters-input" 
                     value={inputNsu}
-                    onChange={chengeInputNsu}
+                    onChange={(ev)=>{setInputNsu(ev.target.value)}}
+                    onKeyDown={hendlerKeyDonwEvent}
                 />
                 <input 
                     type="text" 

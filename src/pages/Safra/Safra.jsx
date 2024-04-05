@@ -17,7 +17,7 @@ import Filters from "./components/Filters/Filters.jsx";
 
 function Safra() {
 
-    const { filteredData, setData } = useContext(context);
+    const { data, setData } = useContext(context);
     const [sales, setSales] = useState([]);
     const [receipts, setReceipts] = useState([]);
     const [hasPosted, setHasPosted] = useState(true);
@@ -27,12 +27,12 @@ function Safra() {
     const [showModalReceipts, setShowModalReceipts] = useState(false);
     const [showModasFilters,setShowModalFilters] = useState(false)
 
-    const offset = useRef(0);
 
+    const offset = useRef(0);
     const { ref, inView } = useInView({});
 
     const dataLength = () => {
-        offset.current = filteredData.length;
+        offset.current = data.length;
     };
 
 
@@ -227,7 +227,7 @@ function Safra() {
 
         setLoop(pre => pre + 1);
 
-    }, [setData]);
+    }, [setData,offset]);
 
     const postSales = useCallback(async () => {
 
@@ -379,9 +379,9 @@ function Safra() {
                 </div>
                 <div className="items">
                     {
-                        filteredData.length > 0 &&
+                        data.length > 0 &&
 
-                        filteredData.map((el) => (
+                        data.map((el) => (
                                 <CardSafra key={el.Nsu} sale={el}  vb />
                             )
                         )
