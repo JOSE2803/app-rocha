@@ -6,11 +6,16 @@ import Spinner from '../../../../components/Spinner/Spinner';
 import formatCurrency from "../../../../utils/formatCurrency.js";
 import { format } from 'date-fns';
 import axios from "axios";
+import { context } from "../../../../context/SafraContext/SafraContext.jsx";
 
 import "./Receipts.css";
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 
 function Receipts({ receipts }) {
+
+    const {
+        protheusToken
+    } = useContext(context);
 
     const [data, setData] = useState([]);
     const [sumOfReceipts, setSumOfReceipts] = useState([]);
@@ -87,9 +92,13 @@ function Receipts({ receipts }) {
             const params = {
                 "E1_ZBXSAFR": format(receipt.receiptDate, "yyyyMMdd")
             };
+            
+            const headers = {
+                "protheus_authorization": `Bearer ${protheusToken}`
+            };
 
             try {
-                await axios.put(`${import.meta.env.VITE_API_URL}/accounts-receivable/${recno}`, params);
+                await axios.put(`${import.meta.env.VITE_API_URL}/accounts-receivable/${recno}`, params, { headers });
                 return { "success": true };
             } catch (error) {
                 return { "success": false, "message": error.message };

@@ -15,6 +15,7 @@ function Installments() {
         setInstallmentContents,
         showOptions,
         setShowOptions,
+        protheusToken
     } = useContext(context);
 
     const [installment, setInstallment] = useState(null);
@@ -56,7 +57,11 @@ function Installments() {
                 "E1_ZNUMPRC": installment.installment
             };
 
-            await axios.put(`${import.meta.env.VITE_API_URL}/accounts-receivable/${el.R_E_C_N_O_}`, params);
+            const headers = {
+                "protheus_authorization": `Bearer ${protheusToken}`
+            };
+
+            await axios.put(`${import.meta.env.VITE_API_URL}/accounts-receivable/${el.R_E_C_N_O_}`, params, { headers });
 
             setInstallmentContents((current) => {
                 return current.map((item) => {
@@ -95,7 +100,11 @@ function Installments() {
                 "E1_ZNUMPRC": ""
             };
 
-            await axios.put(`${import.meta.env.VITE_API_URL}/accounts-receivable/${el.recno}`, params);
+            const headers = {
+                "protheus_authorization": `Bearer ${protheusToken}`
+            };
+
+            await axios.put(`${import.meta.env.VITE_API_URL}/accounts-receivable/${el.recno}`, params, { headers});
 
             setInstallmentContents((current) => {
                 return current.map((item) => {

@@ -5,6 +5,9 @@
 
 const keysValidation = (objeto, expectedKeys) => {
 
+    console.log(objeto),
+    console.log(expectedKeys)
+
     // Cria um novo objeto com as keys trimadas
     const trimmedObject = Object.keys(objeto).reduce((acc, key) => {
         acc[key.trim()] = objeto[key];

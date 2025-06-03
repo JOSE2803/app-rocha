@@ -17,7 +17,7 @@ import Filters from "./components/Filters/Filters.jsx";
 
 function Safra() {
 
-    const { data, setData,offset,params,setParams,filtered,setFiltered} = useContext(context);
+    const { data, setData,offset,params,setParams,filtered,setFiltered, setProtheusToken} = useContext(context);
     const [sales, setSales] = useState([]);
     const [receipts, setReceipts] = useState([]);
     const [hasPosted, setHasPosted] = useState(true);
@@ -327,6 +327,26 @@ function Safra() {
         }
 
     }, [sales]);
+
+    useEffect(() => {
+    const fetchInitialData = async () => {
+        try {
+        const response = await axios.post(
+            `${import.meta.env.VITE_API_URL}/auth`,
+            {
+            username: "JOSE.LACERDA", // Em outra oportunidade, definir outro usuário para esta operação.
+            password: "mm33"
+            }            
+        );
+        setProtheusToken(response.data.access_token_protheus)
+        } catch (error) {
+        toastError('Erro ao carregar dados iniciais');
+        }
+    };
+
+    fetchInitialData();
+    }, [setProtheusToken]);
+
 
     useEffect(() => {
 

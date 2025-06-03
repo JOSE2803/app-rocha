@@ -15,6 +15,7 @@ function SafraContextProvider({ children }) {
         offset: offset.current,
         limit: 2
     })
+    const [protheusToken, setProtheusToken] = useState("");
 
     
     
@@ -31,7 +32,9 @@ function SafraContextProvider({ children }) {
             params,
             setParams,
             filtered,
-            setFiltered
+            setFiltered,
+            protheusToken,
+            setProtheusToken
         }}>
             {
                 children
