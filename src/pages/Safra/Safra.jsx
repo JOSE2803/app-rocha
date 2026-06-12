@@ -22,13 +22,12 @@ function Safra() {
     const [receipts, setReceipts] = useState([]);
     const [hasPosted, setHasPosted] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [loop, setLoop] = useState(0);
+    const [loadTrigger, setLoadTrigger] = useState(0);
 
     const [showModalReceipts, setShowModalReceipts] = useState(false);
     const [showModasFilters,setShowModalFilters] = useState(false)
 
 
-    
     const { ref, inView } = useInView({});
 
     const dataLength = () => {
@@ -94,7 +93,7 @@ function Safra() {
     const hendlerSetInitialParams = ()=>{
         setParams({
             offset: offset.current,
-            limit: 2
+            limit: 20
         })
         setFiltered(false)
     }
@@ -218,22 +217,22 @@ function Safra() {
     }, []);
 
     const getSales = useCallback(async () => {
-        setParams((prevParams) => ({
-            ...prevParams,
-            offset: offset.current
-        }));
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/safra`, { params });
-       
-        setData((pre) => {
-            const updateData = removeDuplicates([...pre, ...response.data.data], "Nsu");
-            return updateData;
-        });
-      
-        setHasPosted(false);
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/safra`, {
+                params: { ...params, offset: offset.current }
+            });
 
-        setLoop(pre => pre + 1);
+            const newData = response.data.data;
+            setData((pre) => removeDuplicates([...pre, ...newData], "Nsu"));
+            setHasPosted(false);
 
-    }, [setData,offset,params,setParams]);
+            if (newData.length >= params.limit) {
+                setLoadTrigger((v) => v + 1);
+            }
+        } catch {
+            toastError('Erro ao carregar vendas');
+        }
+    }, [setData, offset, params]);
 
     const postSales = useCallback(async () => {
 
@@ -354,7 +353,7 @@ function Safra() {
             getSales();
         }
 
-    }, [inView, loop, getSales])
+    }, [inView, getSales, loadTrigger])
 
     useEffect(() => {
         if (sales.length > 0) {

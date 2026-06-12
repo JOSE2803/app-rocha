@@ -13,7 +13,7 @@ function SafraContextProvider({ children }) {
     const offset = useRef(0);
     const [params,setParams] = useState({
         offset: offset.current,
-        limit: 2
+        limit: 20
     })
     const [protheusToken, setProtheusToken] = useState("");
 
