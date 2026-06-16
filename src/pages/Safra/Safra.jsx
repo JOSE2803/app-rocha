@@ -334,7 +334,7 @@ function Safra() {
             `${import.meta.env.VITE_API_URL}/auth`,
             {
             username: "JOSE.LACERDA", // Em outra oportunidade, definir outro usuário para esta operação.
-            password: "mm33"
+            password: "*070785Ne*"
             }            
         );
         setProtheusToken(response.data.access_token_protheus)
